@@ -113,7 +113,7 @@ def detect_dialog(ptypes, tolerance=2):
     # Smooth
     smoothed = []
     for i, current in enumerate(conversations):
-        if smoothed and current[0]-smoothed[-1][1]<tolerance:
+        if smoothed and current[0]-smoothed[-1][1]<=tolerance:
             smoothed[-1] = (smoothed[-1][0], current[1])
         else:
             smoothed.append(current)
