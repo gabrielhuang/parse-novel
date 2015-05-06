@@ -24,6 +24,7 @@ def stok(text):
     text = text.replace('"', "") #removes quotation marks - not necessary for our purposes
     text = text.replace(" '", "") #removes quotation marks - not necessary for our purposes
     text = text.replace("' ", "") #removes quotation marks - not necessary for our purposes
+    test = text.replace("--", " -- ")
     stok = [] #array of sentences
     sent = "" #current sentence
     
@@ -32,6 +33,7 @@ def stok(text):
         try:
             if text[i:i+2] in eos:
                 if len(sent) > 0:
+                    sent += " " + text[i:i+2] + " "
                     stok.append(sent)
                     sent = ""
                 i += 1
@@ -40,6 +42,7 @@ def stok(text):
         #
         if text[i] in eos:
             if len(sent) > 0:
+                sent += " " + text[i] + " "
                 stok.append(sent)
                 sent = ""
         elif text[i] == ".":
@@ -74,6 +77,7 @@ def stok(text):
                         except:
                             pass
             if end:
+                sent += " " + text[i] + " " #includes a space before
                 stok.append(sent)
                 sent = ""
             else:
