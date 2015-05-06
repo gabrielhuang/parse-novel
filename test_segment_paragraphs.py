@@ -39,11 +39,11 @@ for i,(p,p_type) in enumerate(zip(paragraphs, p_types)):
     
 table = prettify.table('\n'.join(rows))
 html = prettify.html(table)
-f_out = open('out.html','w')
+f_out = open('paragraphs.html','w')
 f_out.write(html)
 f_out.close()    
         
-#%% Export sentences with verbs highlighted
+#%% Export sentences with physical entities
 # Get tags
 tags = [[nltk.pos_tag(sent) for sent,span in paragraph] for paragraph in words]
 
@@ -65,6 +65,6 @@ for i,(p,p_type,p_tag) in enumerate(zip(paragraphs, p_types, ntags)):
     
 table = prettify.table('\n'.join(rows))
 html = prettify.html(table)
-f_out = open('out.html','w')
+f_out = open('physics.html','w')
 f_out.write(html)
 f_out.close()
