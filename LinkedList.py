@@ -21,7 +21,7 @@ class LinkedList():
             node.nextNode = self.head
             self.head.prevNode = node
             self.head = node
-    def refresh(self, node): #takes a node from the list and puts it at the head (for rencency)
+    def refresh(self, node): #takes a node from the list and puts it at the head (for recency)
         if self.head == node:
             pass
         else:
@@ -35,12 +35,18 @@ class LinkedList():
                 pass
             node.prevNode = None
             self.append(node)
-    def printout(self):
+    def __str__(self):
         curnode = self.head
+        acc = ''
         while (curnode):
-            print curnode.data
+            acc += str(curnode.data)
             if curnode == curnode.nextNode:
                 break;
             curnode = curnode.nextNode
-        print "---"
-        
+        acc += "---"
+        return acc
+    def __iter__(self):
+        current = self.head
+        while current is not None: #iterating over all named entities
+            yield current.data
+            current = current.nextNode
