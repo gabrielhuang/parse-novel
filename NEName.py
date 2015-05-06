@@ -5,7 +5,7 @@ Created on May 5, 2015
 '''
 titles = set(["Mr.", "Mrs.", "Ms.", "Miss", "Mister", "Dr.", "Doctor", "Monsieur", "Madame"]) #titles
 ctitles = []
-ctitles.append(set(["Mr.", "Mister", "Monsieur"]))
+ctitles.append(set(["Mr.", "Mister", "Monsieur", "Marquis"]))
 ctitles.append(set(["Mrs.", "Ms.", "Miss", "Madame"]))
 ctitles.append(set(["Dr.", "Doctor"]))
 suffixes = set(["Jr.", "Sr."]) #suffixes
@@ -62,6 +62,9 @@ class Name:
                 self.fl = ent[t]
         else:
             self = None
+        if (self == None) or ((self.f in titles) or (self.m in titles) or (self.l in titles) or (self.fl in titles) or 
+            (self.f in suffixes) or (self.m in suffixes) or (self.l in suffixes) or (self.fl in suffixes)):
+            self = None
     
     def update(self, other):
         if len(other.t) > len(self.t):
@@ -114,10 +117,6 @@ class Name:
                 match = True
             else:
                 poss = False
-        #updating
-        if poss and match:
-            self.update(other)
-            other = None
         #returning
         return (poss and match)
     

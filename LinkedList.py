@@ -21,7 +21,7 @@ class LinkedList():
             node.nextNode = self.head
             self.head.prevNode = node
             self.head = node
-    def refresh(self, node): #takes a node from the list and puts it at the head (for rencency)
+    def refresh(self, node): #takes a node from the list and puts it at the head (for recency)
         if self.head == node:
             pass
         else:
