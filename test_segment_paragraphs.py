@@ -29,16 +29,19 @@ sentences = segmenter.paragraphs_to_sentences(paragraphs)
 words = segmenter.paragraphs_to_words(sentences)
         
 # Detect smoothed dialogs
-dialogs = segmenter.detect_dialog(p_types, tolerance=2)        
-       
+dialogs = segmenter.detect_dialog(p_types, tolerance=2)
+starts = {start: i for i, (start,stop) in enumerate(dialogs)}      
+stops = {stop: i for i, (start,stop) in enumerate(dialogs)}
+
 # Define alternating colors for each type of paragraph
 colors = {
     'dialog': ['background-color: #81F7BE', 'background-color: #81F7D8'],
     'normal': ['background-color: #A9D0F5', 'background-color: #A9BCF5'],
-    'chapter': ['background-color: #FFFF66', 'background-color: #FFFF66']
+    'chapter': ['background-color: #FFFF66', 'background-color: #FFFF66'],
+    'dialogStartStop': ['background-color: yellow;', 'background-color: yellow']
 }
         
-#%% Export numbered paragraphs
+#%% 1. Export numbered paragraphs
 rows = [prettify.content_comment_row('Number', 'Original text','Comments')]
 for i,(p,p_type) in enumerate(zip(paragraphs, p_types)):
     style = colors[p_type][i%2]
@@ -49,9 +52,26 @@ html = prettify.html(table)
 f_out = open('paragraphs.html','w')
 f_out.write(html)
 f_out.close()    
-              
+          
         
-#%% Export sentences with physical entities
+#%% 2. Export numbered paragraphs with dialog detection
+rows = [prettify.content_comment_row('Number', 'Original text','Comments')]
+for i,(p,p_type) in enumerate(zip(paragraphs, p_types)):
+    if i in starts:
+        rows.append(prettify.merged_row('Conversation {} -->'.format(starts[i]), 3, colors['dialogStartStop'][0]))
+    if i in stops:
+        rows.append(prettify.merged_row('<-- End {}'.format(stops[i]), 3, colors['dialogStartStop'][1]))
+    style = colors[p_type][i%2]
+    rows.append(prettify.content_comment_row(i, p, p_type, style=style))
+    
+table = prettify.table('\n'.join(rows))
+html = prettify.html(table)
+f_out = open('dialogs.html','w')
+f_out.write(html)
+f_out.close()    
+              
+                          
+#%% (not working well) Export sentences with physical entities
 # Get tags
 tags = [[nltk.pos_tag(sent) for sent,span in paragraph] for paragraph in words]
 

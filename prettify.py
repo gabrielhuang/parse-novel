@@ -134,6 +134,20 @@ def content_comment_row(*args, **kwargs):
         acc.append('<td class="content" style="{}">{}</td>'.format(style, arg))
     acc.append('</tr>')
     return ' '.join(acc)
+
+    
+def merged_row(text, cols, style=''):
+    '''
+    Return an empty, merged row
+    
+    Parameters:
+    cols: number of columns
+    style: css style string
+    '''  
+    acc = ['<tr>']    
+    acc.append('<td colspan="{}" class="content" style="{}">{}</td>'.format(cols, style, text))
+    acc.append('</tr>')
+    return ' '.join(acc)
     
     
 def table(rows):
