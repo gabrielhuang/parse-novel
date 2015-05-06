@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+'''
+@brief Test application to export augmented novel
+@date April 2015
+@author Gabriel Huang
+'''
+
 import nltk
 import segmenter
 import prettify

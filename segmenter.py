@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+'''
+@brief Functions to cut text into paragraphs, sentences and words
+@date April 2015
+@author Gabriel Huang
+'''
+
 import nltk
 from nltk.tokenize.punkt import PunktWordTokenizer
 import re

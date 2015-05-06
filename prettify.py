@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+'''
+@brief Tools for exporting augmented Novel
+@date April 2015
+@author Gabriel Huang
+'''
+
 import itertools
 
 #####################################
