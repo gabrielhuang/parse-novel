@@ -9,9 +9,12 @@ import nltk
 import segmenter
 import prettify
 import itertools
-
+import NamedEntityIdentifier
 reload(segmenter)
 reload(prettify)
+reload(NamedEntityIdentifier)
+from NamedEntityIdentifier import NamedEntityIdentifier
+
 
 # Load text
 #txt_file = open('sherlock-pg1661.txt','r')
@@ -69,7 +72,36 @@ html = prettify.html(table)
 f_out = open('dialogs.html','w')
 f_out.write(html)
 f_out.close()    
-              
+   
+        
+#%% 3. Export numbered paragraphs with dialog AND named entity detection
+# Train Named Entity on whole text
+nei = NamedEntityIdentifier()
+nei.train(txt)        
+        
+in_conversation = False
+rows = [prettify.content_comment_row('Number', 'Original text','Comments')]
+for i,(p,p_type) in enumerate(zip(paragraphs, p_types)):
+    if i in starts: # start of conversation
+        rows.append(prettify.merged_row('Conversation {} -->'.format(starts[i]), 3, colors['dialogStartStop'][0]))
+        characters = set()
+        in_conversation = True
+    if in_conversation: # middle of conversation
+        current_characters = set(name for pos,name in nei.predict(p))
+        characters = characters.union(current_characters)
+    if i in stops: # end of conversation
+        rows.append(prettify.merged_row('<-- End {}'.format(stops[i]), 3, colors['dialogStartStop'][1]))
+        rows.append(prettify.merged_row('Featured characters: {}'.format(', '.join(characters)), 3, colors['dialogStartStop'][1]))
+        characters = set()
+        in_conversation = True
+    style = colors[p_type][i%2]
+    rows.append(prettify.content_comment_row(i, p, p_type, style=style))
+    
+table = prettify.table('\n'.join(rows))
+html = prettify.html(table)
+f_out = open('people.html','w')
+f_out.write(html)
+f_out.close()             
                           
 #%% (not working well) Export sentences with physical entities
 # Get tags
