@@ -28,20 +28,24 @@ sentences = segmenter.paragraphs_to_sentences(paragraphs)
 # Get words with spans
 words = segmenter.paragraphs_to_words(sentences)
         
-#%% Export paragraphs
-rows = [prettify.content_comment_row('Original text','Comments')]
+# Detect smoothed dialogs
+dialogs = segmenter.detect_dialog(p_types, tolerance=2)        
+        
+#%% Export numbered paragraphs
+rows = [prettify.content_comment_row('Number', 'Original text','Comments')]
 for i,(p,p_type) in enumerate(zip(paragraphs, p_types)):
     if p_type == 'dialog':
         style = 'background-color: #81F7BE' if i%2 else 'background-color: #81F7D8'
     else:
         style = 'background-color: #A9D0F5' if i%2 else 'background-color: #A9BCF5'
-    rows.append(prettify.content_comment_row(p, p_type, style, style))
+    rows.append(prettify.content_comment_row(i, p, p_type, style=style))
     
 table = prettify.table('\n'.join(rows))
 html = prettify.html(table)
 f_out = open('paragraphs.html','w')
 f_out.write(html)
 f_out.close()    
+              
         
 #%% Export sentences with physical entities
 # Get tags
@@ -61,7 +65,7 @@ for i,(p,p_type,p_tag) in enumerate(zip(paragraphs, p_types, ntags)):
         style = 'background-color: #A9D0F5' if i%2 else 'background-color: #A9BCF5'
     flat_tags = itertools.chain(*p_tag)
     flat_tags = '<br>'.join([word for word,tag in flat_tags])
-    rows.append(prettify.content_comment_row(p, flat_tags, style, style))
+    rows.append(prettify.content_comment_row(i, p, flat_tags, style=style))
     
 table = prettify.table('\n'.join(rows))
 html = prettify.html(table)

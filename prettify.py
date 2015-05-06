@@ -17,7 +17,6 @@ html_body = '''
 <link rel="stylesheet" type="text/css" href="out.css">
 <style>
 td{{
-    width: 50%;
     text-align: left;
 }}
 </style>
@@ -121,13 +120,20 @@ def prettify_in_place(text, spans, values):
     return html_body.format(content=out)
     
     
-def content_comment_row(content, comment, contentstyle='', commentstyle=''):
+def content_comment_row(*args, **kwargs):
     '''
     Return a row in table
+    
+    Parameters:
+    *args: one argument per cell
+    **kwargs: style=(replace with css string)
     '''
-    return '<tr><td class="content" style="{}">{}</td>'\
-    '<td class="comment" style="{}">{}</td></tr>\n'.format(
-        contentstyle, content, commentstyle, comment)
+    style = kwargs.get('style', '')    
+    acc = ['<tr>']    
+    for arg in args:
+        acc.append('<td class="content" style="{}">{}</td>'.format(style, arg))
+    acc.append('</tr>')
+    return ' '.join(acc)
     
     
 def table(rows):
