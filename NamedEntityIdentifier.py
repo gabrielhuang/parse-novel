@@ -10,7 +10,6 @@ from nltk.tokenize import word_tokenize
 from nltk import defaultdict
 import nltk
 import math
-import cPickle
 
 #name stuffs
 titles = set(["Mr.", "Mrs.", "Ms.", "Miss", "Mister", "Dr.", "Doctor", "Monsieur", "Madame"]) #titles
