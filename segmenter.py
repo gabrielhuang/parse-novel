@@ -10,6 +10,7 @@ from nltk.tokenize.punkt import PunktWordTokenizer
 import re
 
 empty_line = re.compile(r'[\t\ ]*\n[\t\ ]*[\n]+[\t\ ]*')
+chapter = re.compile(r'(Chapter|CHAPTER|chapter)[\t\ ]+\d+')
 tokenizer = PunktWordTokenizer()
 sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
 
@@ -27,6 +28,8 @@ def raw_to_paragraphs(txt):
     for p in paragraphs:
         if p and p[0]=='"':
             ptypes.append('dialog')
+        elif chapter.match(p):
+            ptypes.append('chapter')
         else:
             ptypes.append('normal')
     return paragraphs, ptypes

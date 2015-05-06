@@ -30,14 +30,18 @@ words = segmenter.paragraphs_to_words(sentences)
         
 # Detect smoothed dialogs
 dialogs = segmenter.detect_dialog(p_types, tolerance=2)        
+       
+# Define alternating colors for each type of paragraph
+colors = {
+    'dialog': ['background-color: #81F7BE', 'background-color: #81F7D8'],
+    'normal': ['background-color: #A9D0F5', 'background-color: #A9BCF5'],
+    'chapter': ['background-color: #FFFF66', 'background-color: #FFFF66']
+}
         
 #%% Export numbered paragraphs
 rows = [prettify.content_comment_row('Number', 'Original text','Comments')]
 for i,(p,p_type) in enumerate(zip(paragraphs, p_types)):
-    if p_type == 'dialog':
-        style = 'background-color: #81F7BE' if i%2 else 'background-color: #81F7D8'
-    else:
-        style = 'background-color: #A9D0F5' if i%2 else 'background-color: #A9BCF5'
+    style = colors[p_type][i%2]
     rows.append(prettify.content_comment_row(i, p, p_type, style=style))
     
 table = prettify.table('\n'.join(rows))
@@ -59,10 +63,7 @@ ntags = [[[(word,tag) for word,tag in sent if tag in {'NN','NNS'}]
   
 rows = [prettify.content_comment_row('Original text','Comments')]
 for i,(p,p_type,p_tag) in enumerate(zip(paragraphs, p_types, ntags)):
-    if p_type == 'dialog':
-        style = 'background-color: #81F7BE' if i%2 else 'background-color: #81F7D8'
-    else:
-        style = 'background-color: #A9D0F5' if i%2 else 'background-color: #A9BCF5'
+    style = colors[p_type][i%2]
     flat_tags = itertools.chain(*p_tag)
     flat_tags = '<br>'.join([word for word,tag in flat_tags])
     rows.append(prettify.content_comment_row(i, p, flat_tags, style=style))
