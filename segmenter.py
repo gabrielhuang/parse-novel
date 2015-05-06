@@ -87,6 +87,36 @@ def paragraphs_to_words(paragraphs):
     return acc
             
     
+def detect_dialog(ptypes, tolerance=2):
+    '''
+    Detect continuous chunks of dialogues,
+    tolerating gaps of size<=tolerance
+    
+    Returns:
+    list of (begin, end) where begin is included and end is excluded
+    '''
+    # Get conversations
+    conversations = []
+    begin = 0
+    while begin<len(ptypes):
+        if ptypes[begin] == 'dialog':
+            end = begin
+            while end<len(ptypes) and ptypes[end] == 'dialog':
+                end += 1
+            conversations.append((begin, end))
+            begin = end
+        else:
+            begin += 1
+    # Smooth
+    smoothed = []
+    for i, current in enumerate(conversations):
+        if smoothed and current[0]-smoothed[-1][1]<tolerance:
+            smoothed[-1] = (smoothed[-1][0], current[1])
+        else:
+            smoothed.append(current)
+    return smoothed
+        
+    
 #########################
 # Test
 #########################    
@@ -97,6 +127,8 @@ if __name__=='__main__':
     "Hi", said Tom.
     
     "What's up?", replied his best friend.
+    
+    A few seconds pass.    
     
     "We're darn high man!"
     
@@ -116,3 +148,7 @@ if __name__=='__main__':
     print 'Test words'
     words = paragraphs_to_words(sentences)
     print words
+    
+    print 'Detect Dialog'
+    dialogs = detect_dialog(ptypes)
+    print dialogs
