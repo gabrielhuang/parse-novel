@@ -36,7 +36,7 @@ def stok(text):
                     sent += " " + text[i:i+2] + " "
                     stok.append(sent)
                     sent = ""
-                i += 1
+                continue#i += 1
         except:
             pass
         #
