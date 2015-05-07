@@ -9,6 +9,24 @@ Built upon billyanhuang's contribution
 '''
 import re
 
+######## Stuff for compatibility with STok ########
+eos = set(["?", "!", ":", "\n", "--"]) #end of sentence symbols, not including period
+titles = set(["Mr.", "Mrs.", "Ms.", "Miss", "Mister", "Dr.", "Doctor", "Sir", "Madam"]) #titles
+suffixes = set(["Jr.", "Sr."]) #suffixes
+
+def isc(char): #character
+    return (ord(char) > 96 and ord(char) < 123) or (ord(char) > 64 and ord(char) < 91) or (ord(char) > 47 and ord(char) < 58)
+
+def islc(char): #lowercase
+    return (ord(char) > 96 and ord(char) < 123)
+
+def isuc(char): #uppercase
+    return (ord(char) > 64 and ord(char) < 91)
+
+def issn(char): #space or newline or tab
+    return (ord(char) == 32 or (ord(char) > 9 and ord(char) < 15))
+################################
+
 nonperiod_eos = re.compile(r'[\?\!:]') # non-period end of sentences
 drop_symbols = re.compile(r'("|--|[\n\t\ \'])+')
 specials = set(['Mr', 'Mrs', 'Ms', 'Jr', 'Sr'])
@@ -61,4 +79,8 @@ Miss Baker and I exchanged a short glance consciously devoid of meaning. I was a
     sentences = stok(txt)
     for s in sentences:
         print s
-    
+ 
+    import STok
+    reference = STok.stok(txt)
+    for s in reference:
+        print s

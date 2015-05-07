@@ -4,6 +4,7 @@ Created on May 4, 2015
 @author: billyanhuang
 '''
 import STok #works better than the nltk one
+#import STok2 as STok
 import NEName #class for character names and comparisons
 import LinkedList #recency-based coreference
 from nltk.tokenize import word_tokenize
@@ -128,7 +129,7 @@ class NamedEntityIdentifier:
         res = extractNE(tok)
         #printing out ranking by prevalence and correlated adjectives
         for name in res[0]: #iterating over all named entities
-            info = str(name)
+            info = name.printout()
             NEs[name] = info[1]
             
         sNEs = sorted(NEs.iteritems(),key=lambda (k,v): v,reverse=True) #sorted by count
@@ -142,6 +143,8 @@ class NamedEntityIdentifier:
     def predict(self, text):
         detected = detectNE(self.res, text)
         return [(pos, name.printout()[0]) for name,pos in detected if name]
+    def get(self):
+        return sorted([(entity.get_count(), entity.get_data()) for entity in self.res[0]], reverse=True)
 
 ###
 if __name__=='__main__':
@@ -150,6 +153,7 @@ if __name__=='__main__':
     print 'Training'
     text = open('text.txt').read()    
     nei.train(text)
+    print '\n'.join(map(str,nei.get()))
     
     print 'Predicting'    
     par = open('par.txt').read()

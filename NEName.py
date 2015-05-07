@@ -121,6 +121,9 @@ class Name:
         return (poss and match)
     
     def printout(self):
+        return (self.get_data(), self.get_count())
+    
+    def get_data(self):
         info = ""
         if len(self.t) > 0:
             info += self.t + " "
@@ -134,7 +137,13 @@ class Name:
             info += self.fl + " "
         if len(self.s) > 0:
             info += self.s + " "
-        return tuple([info[:-1], self.count])
+        return info[:-1]
+        
+    def get_count(self):
+        return self.count
+    
+    def __str__(self):
+        return str(self.printout()[0])
 
 def samename(n1, n2): #first/last names
     try:
