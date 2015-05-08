@@ -10,16 +10,23 @@ import segmenter
 import prettify
 import itertools
 import NamedEntityIdentifier
+import numpy as np
+import people
+import draw_graph
 reload(segmenter)
 reload(prettify)
 reload(NamedEntityIdentifier)
+reload(people)
+reload(draw_graph)
 from NamedEntityIdentifier import NamedEntityIdentifier
-
+from people import People
+from draw_graph import draw_graph, draw_graphviz
 
 # Load text
 #txt_file = open('sherlock-pg1661.txt','r')
 txt_file = open('data/gatsby.txt','r')
-txt = txt_file.read(100000).strip()[3000:]
+txt = txt_file.read().strip()
+#txt = txt_file.read(100000).strip()[3000:]
 
 
 # Get paragraphs and whether is it dialog or narrative
@@ -73,8 +80,60 @@ f_out = open('www/dialogs.html','w')
 f_out.write(html)
 f_out.close()    
    
+#%% 3a. Export numbered paragraphs with dialog AND named entity detection
+# Train Named Entity on whole text
+print 'Learning all relevant characters'
+ppl = People(train_set=txt, min_count=5)
         
-#%% 3. Export numbered paragraphs with dialog AND named entity detection
+#%%
+print 'Analyzing interactions'
+in_conversation = False
+rows = [prettify.content_comment_row('Number', 'Original text','Comments')]
+interactions = np.zeros((ppl.num(), ppl.num()))
+for i,(p,p_type) in enumerate(zip(paragraphs, p_types)):
+    if (i+1)%10==0:
+        print 'Processing paragraph {}/{}'.format(i+1, len(paragraphs))
+    if i in starts: # start of conversation
+        rows.append(prettify.merged_row('Conversation {} -->'.format(starts[i]), 3, colors['dialogStartStop'][0]))
+        characters = set()
+        in_conversation = True
+    if in_conversation: # middle of conversation
+        current_characters = ppl.predict(p)
+        characters = characters.union(current_characters)
+    if i in stops: # end of conversation
+        rows.append(prettify.merged_row('<-- End {}'.format(stops[i]), 3, colors['dialogStartStop'][1]))
+        rows.append(prettify.merged_row('Featured characters: {}'.format(', '.join(map(ppl.get,characters))), 3, colors['dialogStartStop'][1]))
+        in_conversation = False
+        # Update interactions
+        for ch1 in characters:
+            for ch2 in characters:
+                if ch1!=ch2:
+                    interactions[ch1,ch2] += 1
+    style = colors[p_type][i%2]
+    rows.append(prettify.content_comment_row(i, p, p_type, style=style))
+    
+table = prettify.table('\n'.join(rows))
+html = prettify.html(table)
+f_out = open('www/peopleA.html','w')
+f_out.write(html)
+f_out.close()               
+        
+#%% now        
+edges = []
+weights = []
+for i in range(interactions.shape[0]):
+    for j in range(i+1, interactions.shape[0]):
+        if interactions[i,j]>0.5:
+            edges.append((ppl.get(i), ppl.get(j)))
+            weights.append(interactions[i,j])
+weights = np.array(weights)
+#draw_graph(edges, labels=weights, edge_size=weights)
+graph_txt = draw_graphviz(edges, weights)
+graph_file = open('www/graph.txt','w')
+graph_file.write(graph_txt)
+graph_file.close()
+
+#%% 3b. Export numbered paragraphs with dialog AND named entity detection
 # Train Named Entity on whole text
 nei = NamedEntityIdentifier()
 nei.train(txt, mincount=10)        
@@ -99,7 +158,7 @@ for i,(p,p_type) in enumerate(zip(paragraphs, p_types)):
     
 table = prettify.table('\n'.join(rows))
 html = prettify.html(table)
-f_out = open('www/people.html','w')
+f_out = open('www/peopleB.html','w')
 f_out.write(html)
 f_out.close()             
                           
