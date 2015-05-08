@@ -18,7 +18,7 @@ from NamedEntityIdentifier import NamedEntityIdentifier
 
 # Load text
 #txt_file = open('sherlock-pg1661.txt','r')
-txt_file = open('gatsby.txt','r')
+txt_file = open('data/gatsby.txt','r')
 txt = txt_file.read(100000).strip()[3000:]
 
 
@@ -52,7 +52,7 @@ for i,(p,p_type) in enumerate(zip(paragraphs, p_types)):
     
 table = prettify.table('\n'.join(rows))
 html = prettify.html(table)
-f_out = open('paragraphs.html','w')
+f_out = open('www/paragraphs.html','w')
 f_out.write(html)
 f_out.close()    
           
@@ -69,7 +69,7 @@ for i,(p,p_type) in enumerate(zip(paragraphs, p_types)):
     
 table = prettify.table('\n'.join(rows))
 html = prettify.html(table)
-f_out = open('dialogs.html','w')
+f_out = open('www/dialogs.html','w')
 f_out.write(html)
 f_out.close()    
    
@@ -99,7 +99,7 @@ for i,(p,p_type) in enumerate(zip(paragraphs, p_types)):
     
 table = prettify.table('\n'.join(rows))
 html = prettify.html(table)
-f_out = open('people.html','w')
+f_out = open('www/people.html','w')
 f_out.write(html)
 f_out.close()             
                           
@@ -122,6 +122,6 @@ for i,(p,p_type,p_tag) in enumerate(zip(paragraphs, p_types, ntags)):
     
 table = prettify.table('\n'.join(rows))
 html = prettify.html(table)
-f_out = open('physics.html','w')
+f_out = open('www/physics.html','w')
 f_out.write(html)
 f_out.close()

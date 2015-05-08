@@ -140,7 +140,7 @@ class NamedEntityIdentifier:
             res[2].add(name.f)
             res[2].add(name.l)
         self.res = res
-    def predict(self, text):9
+    def predict(self, text):
         detected = detectNE(self.res, text)
         return [(pos, name.printout()[0]) for name,pos in detected if name]
     def get(self):
@@ -151,11 +151,11 @@ if __name__=='__main__':
     nei = NamedEntityIdentifier()    
     
     print 'Training'
-    text = open('text.txt').read()    
+    text = open('data/text.txt').read()    
     nei.train(text, mincount=7)
     print '\n'.join(map(str,nei.get()))
     
     print 'Predicting'    
-    par = open('par.txt').read()
+    par = open('data/par.txt').read()
     detected = nei.predict(par)
     print detected
