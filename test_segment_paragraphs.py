@@ -77,7 +77,7 @@ f_out.close()
 #%% 3. Export numbered paragraphs with dialog AND named entity detection
 # Train Named Entity on whole text
 nei = NamedEntityIdentifier()
-nei.train(txt)        
+nei.train(txt, mincount=10)        
         
 in_conversation = False
 rows = [prettify.content_comment_row('Number', 'Original text','Comments')]

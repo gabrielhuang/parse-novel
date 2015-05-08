@@ -123,7 +123,7 @@ def detectNE(res, par): #detects occurrences, matches, and keeps track
 
 ###################################################################################################
 class NamedEntityIdentifier:
-    def train(self, text):
+    def train(self, text, mincount=1):
         tok = tokenize(text)
         NEs = {} #final named entities
         res = extractNE(tok)
@@ -133,14 +133,14 @@ class NamedEntityIdentifier:
             NEs[name] = info[1]
             
         sNEs = sorted(NEs.iteritems(),key=lambda (k,v): v,reverse=True) #sorted by count
-        for name in sNEs: #output
-            if name[1] < 10:
-                break
-            res[2].add(name[0].t)
-            res[2].add(name[0].f)
-            res[2].add(name[0].l)
+        for name,count in sNEs: #output
+            if count < mincount:
+                continue
+            res[2].add(name.t)
+            res[2].add(name.f)
+            res[2].add(name.l)
         self.res = res
-    def predict(self, text):
+    def predict(self, text):9
         detected = detectNE(self.res, text)
         return [(pos, name.printout()[0]) for name,pos in detected if name]
     def get(self):
@@ -152,7 +152,7 @@ if __name__=='__main__':
     
     print 'Training'
     text = open('text.txt').read()    
-    nei.train(text)
+    nei.train(text, mincount=7)
     print '\n'.join(map(str,nei.get()))
     
     print 'Predicting'    
