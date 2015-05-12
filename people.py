@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Thu May 07 10:52:57 2015
+'''
+@brief Detect named entities in book
+@author: Gabriel Huang
 
-@author: gabi
-"""
+This uses two techniques. NLTK's named_entity (very slow and reliable)
+or a simpler heuristic based on Capitalized words (fast and less reliable)
+'''
 
 import time
 import sys
