@@ -16,7 +16,8 @@ from scipy.sparse import csr_matrix
 from nltk.corpus import wordnet as wn
 
 
-titles = set(('Mr.','Mrs.','Ms.','Monsieur','Madame','Mister','Madam','Miss','Dr.','Doctor'))
+titles = set(('Mr.','Mrs.','Ms.','Monsieur','Madame','Mister','Madam','Miss','Dr.','Doctor',
+             'Professor'))
 male_names = open('data/dist.male.first.txt').read().lower().split()[::4]
 female_names = open('data/dist.female.first.txt').read().lower().split()[::4]
 last_names = open('data/dist.all.last.txt').read().lower().split()[::4]
