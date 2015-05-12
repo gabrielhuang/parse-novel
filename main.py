@@ -5,10 +5,8 @@
 @author Gabriel Huang
 '''
 
-import nltk
 import segmenter
 import prettify
-import itertools
 import NamedEntityIdentifier
 import numpy as np
 import people
@@ -18,9 +16,8 @@ reload(prettify)
 reload(NamedEntityIdentifier)
 reload(people)
 reload(draw_graph)
-from NamedEntityIdentifier import NamedEntityIdentifier
 from people import People, PeopleNoPos
-from draw_graph import draw_graph, draw_graphviz
+from draw_graph import draw_graphviz
 
 # choose whether to use part of speech tagging or not for character identification
 PeopleClass = PeopleNoPos  # PeopleClass = People
