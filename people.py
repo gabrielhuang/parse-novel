@@ -17,7 +17,7 @@ from nltk.corpus import wordnet as wn
 
 
 titles = set(('Mr.','Mrs.','Ms.','Monsieur','Madame','Mister','Madam','Miss','Dr.','Doctor',
-             'Professor'))
+             'Professor','Lord'))
 male_names = open('data/dist.male.first.txt').read().lower().split()[::4]
 female_names = open('data/dist.female.first.txt').read().lower().split()[::4]
 last_names = open('data/dist.all.last.txt').read().lower().split()[::4]
@@ -30,6 +30,17 @@ stopwords = stopwords_file.read().split()
 stopwords_file.close()
 
 
+def get_gender(name):
+    is_male = name in male_names
+    is_female = name in female_names
+    if is_male and not is_female:
+        return 'male'
+    elif is_female and not is_male:
+        return 'female'
+    else:
+        return 'neutral'
+    
+    
 def is_person_wordnet(word):
     '''
     Returns if WordNet knows a person named 'word'
@@ -73,7 +84,7 @@ def is_person(words):
         all(is_person_census(word.lower()) or is_person_wordnet(word.lower()) for word in words)
 
 
-def extract_ne(txt):
+def extract(txt):
     '''
     Step 1. Extract named entities using NLTK chunker
     '''
@@ -91,7 +102,7 @@ is_uppercase = re.compile(r'[A-Z]+')
 def extract_no_postag(txt, ignore_after_punct=False):
     '''
     Alternative Step 1.
-    Same as extract_ne without POS tagging
+    Same as extract without POS tagging
     
     Parameters
     :ignore_after_punct: if true then ignore capitalized words after punctuation
@@ -115,7 +126,7 @@ def extract_no_postag(txt, ignore_after_punct=False):
     return names
 
 
-def destructure_ne(named_entity):
+def destructure(named_entity):
     parts = [word for word,tag in named_entity.leaves()]
     key = ' '.join(parts)
     return key, parts
@@ -127,20 +138,20 @@ def destructure_no_postag(named_entity):
     return key, parts
     
 
-def accumulate_ch(named_entities, destructure_ne=destructure_ne):
+def remove_duplicates(named_entities, destructure=destructure):
     '''
     Step 2. Remove duplicates and return unfiltered list of characters (might be redundant)
     '''
     characters = {}
     for entity in named_entities:
         # accumulate
-        key, parts = destructure_ne(entity)
+        key, parts = destructure(entity)
         count = characters[key][1] if key in characters else 0
         characters[key] = (parts, count+1) 
     return characters
 
 
-def filter_ch(characters, min_count=1):
+def filter_persons(characters, min_count=1):
     '''
     Step 3. filter out non-people named entities
     '''
@@ -149,9 +160,10 @@ def filter_ch(characters, min_count=1):
     return characters
 
 
-def merge_ch(characters):
+"""
+def persons_to_groups(characters):
     '''
-    Step 4. Merge characters. (Into character synsets)
+    Step 4.a Merge characters: all named entities sharing one or more tokens are merged
     
     Returns:
     a list of synsets
@@ -163,7 +175,7 @@ def merge_ch(characters):
     Two vertices are connected if they have at least one word in common
     Each character is then DEEFINED as a connected component
     This might merge together people with the same first or last name
-    and require some postprocessing
+    and require some postprocessing (see split_ch)
     '''    
     graph =  csr_matrix((len(characters), len(characters)), dtype=bool) #np.zeros((len(characters), len(characters)))
     for i,(_,(ch_i,_)) in enumerate(characters.items()):
@@ -171,56 +183,134 @@ def merge_ch(characters):
             if set(ch_i).difference(titles).intersection(set(ch_j)):
                 graph[i,j] = graph[j,i] = True
     num_comp, labels = connected_components(graph, directed=False)
-    synsets = [[[],0,''] for i in range(num_comp)]
+    synsets = [[] for i in range(num_comp)]
     for i,(key,(tokens,count)) in enumerate(characters.items()):
-        synsets[labels[i]][0].append((key, set(tokens).difference(titles))) # never keep titles
-        synsets[labels[i]][1] += 1
-        if len(key)>len(synsets[labels[i]][2]): # pick longest one to represent
-            synsets[labels[i]][2] = key
-    synsets = sorted(synsets, key = lambda (instance,count,title):count, reverse = True)
+        synsets[labels[i]].append((key, [token for token in tokens if token not in titles], count)) # never keep titles
     return synsets
+"""
 
 
-def detect_ch(txt, final_characters, extract_ne=extract_ne, destructure_ne=destructure_ne, verbose=False):
+def strip_titles(parts):
+    return [part for part in parts if part not in titles]
+    
+    
+def persons_to_groups(persons):
+    '''
+    Step 4.b Split character synset:
+    
+    1) For each synset find unambiguous instances
+    of the form "First_Name Last_Name" or "Title First_Name Last_Name"
+    and create a new synset for each of them or merge similar ones
+    2) For each remaining (ambiguous) instance assign them to all synsets 
+    with common tokens
+    3) Instances not assigned anywhere are given their own synset
+    4) Accumulate counts and generate title
+    '''
+
+    equiv_synsets = [] # will be equivalent to the actual groups_to_synsets
+    # Step 1)
+    for key, (parts, count) in persons.items():
+        equiv_synset = None
+        parts = strip_titles(parts) 
+        if len(parts)==2:
+            for s in equiv_synsets:
+                if any((set(parts)==set(other_parts) for _,other_parts,_ in s)):
+                    equiv_synset = s
+                    break
+            if equiv_synset is None:
+                equiv_synsets.append([[key, parts, count]])
+            else:
+                equiv_synset.append([key, parts, count])
+    # Step 2 & 3)
+    for key, (parts, count) in persons.items():
+        matched_unambiguous = False
+        parts = strip_titles(parts)
+        if len(parts)!=2:
+            for s in equiv_synsets:
+                if any((set(parts).issubset(other_parts) for _,other_parts,_ in s)):
+                    s.append([key, parts, count]) # Step 2
+                    matched_unambiguous = True
+            if not matched_unambiguous: # Step 3        
+                equiv_synsets.append([[key, parts, count]])
+    return equiv_synsets
+    
+    
+def groups_to_synsets(synsets, use_first=True):
+    '''
+    Step 4.c Generate labels and total counts for each synset
+    '''
+    new_synsets = []
+    for synset in synsets:
+        counts = 0
+        best_label = ''
+        for key, parts, count in synset:
+            counts += count
+            if len(key)>len(best_label): # pick longest one to represent
+                best_label = key
+        if use_first:
+            best_label = synset[0][0]
+        new_synsets.append(([(key,parts) for key,parts,count in synset], counts, best_label))
+    return sorted(new_synsets, key=lambda (a,b,c):b, reverse=True)
+    
+
+def detect_persons(txt, final_characters, ordering=None, extract=extract, destructure=destructure, verbose=False):
     '''
     Step 5. (Prediction) Given trained final characters, detect them in a given (new) paragraph
+    It also flips final_characters to account for recency
     '''
-    ne = extract_ne(txt)
-    results = set()
+    if ordering is None:
+        ordering = [i for i in range(len(final_characters))] # default order
+    ne = extract(txt)
+    results = []
     for named_entity in ne:
         best_synset = None
-        key,parts= destructure_ne(named_entity)
-        parts = set(parts)
+        key,parts= destructure(named_entity)
+        parts = set(strip_titles(parts))
         # Search in final_characters
-        for i, (synset, count, label) in enumerate(final_characters):
+        for i, j in enumerate(ordering):
+            synset, count, label = final_characters[j]
             for ref_key, ref_part in synset:
                 if parts.intersection(ref_part):
-                    best_synset = i
+                    best_synset = i, j # index in ordering, index in final_characters
                     break
             if best_synset is not None:
+                results.append(best_synset[1])
+                # Bring this result to front
+                # these two are O(n) in number of characters, totally acceptable
+                del ordering[best_synset[0]]
+                ordering = [best_synset[1]] + ordering
                 break
-        if best_synset is not None:
-            results.add(best_synset)
         if verbose:
-            print '{} --> {}'.format(key, final_characters[best_synset][2] if best_synset is not None else 'IGNORED')
-    return results
+            print '{} --> {}'.format(key, final_characters[best_synset[1]][2] if best_synset is not None else 'IGNORED')
+    return results, ordering
     
-    
+
 class People:
-    def __init__(self, train_set=None, **kwargs):
+    def __init__(self, train_set=None, *args, **kwargs):
         '''
+        This is like People but uses a simple and fast caps-based heuristic        
+        instead of part of speech tagging.
         Will train model if train_set is not None
         '''
         if train_set is not None:
-            self.train(train_set, **kwargs)
-    def train(self, text, min_count=1):
-        named_entities = extract_ne(text)
-        ch1 = accumulate_ch(named_entities)
-        ch2 = filter_ch(ch1, min_count=min_count)
-        self.final_characters = merge_ch(ch2)
+            self.train(train_set, *args, **kwargs)
+    def train(self, text, use_postag=False, min_count=1):
+        if use_postag:
+            named_entities = extract(text)
+            ch1 = remove_duplicates(named_entities)
+        else:
+            named_entities = extract_no_postag(text, ignore_after_punct=True)
+            ch1 = remove_duplicates(named_entities, destructure=destructure_no_postag)
+        ch2 = filter_persons(ch1, min_count)
+        ch3 = persons_to_groups(ch2)
+        self.final_characters= groups_to_synsets(ch3) 
+        self.reset_recency()
     def predict(self, text, **kwargs):
-        detected_ch = detect_ch(text, self.final_characters, **kwargs)
+        detected_ch, self.ordering = detect_persons(text, self.final_characters, ordering=self.ordering,
+                                extract=extract_no_postag, destructure=destructure_no_postag, **kwargs)
         return detected_ch
+    def reset_recency(self):
+        self.ordering = None
     def get(self, index):
         '''
         Returns label of synset corresponding to index
@@ -230,46 +320,33 @@ class People:
         '''
         Return number of persons learned during training
         '''
-        return len(self.final_characters)
-
-
-class PeopleNoPos(People):
-    def __init__(self, train_set=None, **kwargs):
-        '''
-        This is like People but uses a simple and fast caps-based heuristic        
-        instead of part of speech tagging.
-        Will train model if train_set is not None
-        '''
-        People.__init__(self, train_set, **kwargs)
-    def train(self, text, min_count=1):
-        named_entities = extract_no_postag(text, ignore_after_punct=True)
-        ch1 = accumulate_ch(named_entities, destructure_ne=destructure_no_postag)
-        ch2 = filter_ch(ch1, min_count=min_count)
-        self.final_characters = merge_ch(ch2)
-    def predict(self, text, **kwargs):
-        detected_ch = detect_ch(text, self.final_characters, 
-                                extract_ne=extract_no_postag, destructure_ne=destructure_no_postag, **kwargs)
-        return detected_ch
-      
+        return len(self.final_characters)      
         
         
 #%% Test
 if __name__=='__main__':
-    txt = open('data/gatsby.txt').read()[10000:40000]
-    txt2 = open('data/gatsby.txt').read()[50000:80000]
+    text2 = open('data/hp.txt').read()[10000:20000] 
+    text1 = 'Ginny also known as Ginny Potter says hi to Harry. '+\
+    'But Mr. Potter is not happy because of Ginny. Mrs. Potter is happy though.'    
     
-    for name, PeopleType in [('PeopleNoPos',PeopleNoPos), ('People',People)]:
-        last_time = t = time.time()
-        print '\nModel name {}'.format(name)
-        print 'Training Characters'
-        ppl = PeopleType(txt)
-        print 'Found \n{}\n'.format(ppl.final_characters)
+    
+    #%%
+    for txt in [text1, text2]:
+        for use_postag in [False, True]:
+            last_time = t = time.time()
+            print '\nUse postag {}'.format(use_postag)
+            print 'Training Characters'
+            ppl = People(txt, use_postag=use_postag)
+            print 'Found \n{}\n'.format(ppl.final_characters)
+            
+            #%%
+            print 'Detecting Characters'
+            
+            detected_ch = ppl.predict(txt, verbose=False)
+            characters = map(ppl.get, detected_ch)
+            if len(characters)>20:
+                characters = set(characters)
+            print characters
+            print 'Total time {} seconds'.format(time.time() - last_time)
+            sys.stdout.flush()
         
-        #%%
-        print 'Detecting Characters'
-        
-        detected_ch = ppl.predict(txt2, verbose=False)
-        characters = map(ppl.get, detected_ch)
-        print characters
-        print 'Total time {} seconds'.format(time.time() - last_time)
-        sys.stdout.flush()

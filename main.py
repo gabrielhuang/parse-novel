@@ -16,11 +16,11 @@ reload(prettify)
 reload(NamedEntityIdentifier)
 reload(people)
 reload(draw_graph)
-from people import People, PeopleNoPos
+from people import People
 from draw_graph import draw_graphviz
 
 # choose whether to use part of speech tagging or not for character identification
-PeopleClass = PeopleNoPos  # PeopleClass = People
+use_postag = False
 
 # Load text
 #txt_file = open('sherlock-pg1661.txt','r')
@@ -84,7 +84,7 @@ f_out.close()
 #%% 3a. Export numbered paragraphs with dialog AND named entity detection
 # Train Named Entity on whole text
 print 'Learning all relevant characters'
-ppl = PeopleClass(train_set=txt, min_count=3)
+ppl = People(train_set=txt, min_count=3, use_postag=use_postag)
         
 #%%
 print 'Analyzing interactions'
@@ -120,7 +120,7 @@ f_out.write(html)
 f_out.close()               
         
 #%% generate graph        
-max_chars  = 20
+max_chars  = 10
 edges = []
 weights = []
 node_weights = interactions.sum(axis=0)
