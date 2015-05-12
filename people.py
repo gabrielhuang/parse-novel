@@ -105,6 +105,7 @@ def extract_no_postag(txt, ignore_after_punct=False):
         if not ignore_after_punct or (i==0)\
         or( words[i-1] not in shift_punct) or word in titles:
             if word and is_uppercase.match(word[0]):
+                word = word[0] + word[1:].lower() # change WILSON to Wilson
                 if previous is not None and previous==i-1:                
                     names[-1] += ' ' + word
                 else:
