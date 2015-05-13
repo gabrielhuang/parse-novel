@@ -91,7 +91,7 @@ class Weighter:
 
 #%% Test
 if __name__=='__main__': 
-    txt = open('../data/gatsby.txt').read()
+    txt = open('data/gatsby.txt').read()
     num_segments = 5
     size_segments = len(txt)/num_segments
     segments = [txt[i*size_segments:(i+1)*size_segments] for i in range(num_segments)]
