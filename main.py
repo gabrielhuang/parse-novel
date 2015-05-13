@@ -7,13 +7,11 @@
 
 import segmenter
 import prettify
-import NamedEntityIdentifier
 import numpy as np
 import people
 import draw_graph
 reload(segmenter)
 reload(prettify)
-reload(NamedEntityIdentifier)
 reload(people)
 reload(draw_graph)
 from people import People
@@ -23,9 +21,9 @@ from draw_graph import draw_graphviz
 use_postag = False
 
 # Load text
-#txt_file = open('sherlock-pg1661.txt','r')
 txt_file = open('data/gatsby.txt','r')
 txt_file = open('data/hp.txt','r')
+txt_file = open('data/sherlock-pg1661.txt','r')
 txt = txt_file.read().strip()
 #txt = txt_file.read(100000).strip()[3000:]
 
@@ -82,12 +80,10 @@ f_out.write(html)
 f_out.close()    
    
 #%% 3a. Export numbered paragraphs with dialog AND named entity detection
-# Train Named Entity on whole text
-print 'Learning all relevant characters'
+print 'Pass 1: Character Learning'
 ppl = People(train_set=txt, min_count=3, use_postag=use_postag)
-        
-#%%
-print 'Analyzing interactions'
+
+print 'Pass 2: Character Detection'
 in_conversation = False
 rows = [prettify.content_comment_row('Number', 'Original text','Comments')]
 interactions = np.zeros((ppl.num(), ppl.num()))
@@ -119,8 +115,9 @@ f_out = open('www/peopleA.html','w')
 f_out.write(html)
 f_out.close()               
         
-#%% generate graph        
-max_chars  = 10
+# generate graph    
+print 'Generating graph'
+max_chars  = 15
 edges = []
 weights = []
 node_weights = interactions.sum(axis=0)
@@ -140,29 +137,33 @@ graph_file = open('www/graph.gv','w') # important : use engine neato from GraphV
 graph_file.write(graph_txt)
 graph_file.close()
    
-       
-#%%                   
-'''
-#%% (not working well) Export sentences with physical entities
-# Get tags
-tags = [[nltk.pos_tag(sent) for sent,span in paragraph] for paragraph in words]
+                 
 
-#%% Filter Tags
-vtags = [[[(word,tag) for word,tag in sent if tag in {'VBP','VBD','VB','VBN','VBG','MD','VBZ'}]
-    for sent in paragraph] for paragraph in tags]
-ntags = [[[(word,tag) for word,tag in sent if tag in {'NN','NNS'}]
-    for sent in paragraph] for paragraph in tags]
-  
-rows = [prettify.content_comment_row('Original text','Comments')]
-for i,(p,p_type,p_tag) in enumerate(zip(paragraphs, p_types, ntags)):
-    style = colors[p_type][i%2]
-    flat_tags = itertools.chain(*p_tag)
-    flat_tags = '<br>'.join([word for word,tag in flat_tags])
-    rows.append(prettify.content_comment_row(i, p, flat_tags, style=style))
+#%% (not working well) Export sentences with physical entities
+export_entities = False
+if export_entities:
+    # Get tags
+    import nltk
+    tags = [[nltk.pos_tag(sent) for sent,span in paragraph] for paragraph in words]
     
-table = prettify.table('\n'.join(rows))
-html = prettify.html(table)
-f_out = open('www/physics.html','w')
-f_out.write(html)
-f_out.close()
-'''
+    #%% Filter Tags
+    import itertools
+    from people import all_noun_hypernyms, object_synset
+    
+    vtags = [[[(word,tag) for word,tag in sent if tag in {'VBP','VBD','VB','VBN','VBG','MD','VBZ'}]
+        for sent in paragraph] for paragraph in tags]
+    ntags = [[[(word,tag) for word,tag in sent if tag in {'NN','NNS'} and object_synset in all_noun_hypernyms(word)]
+        for sent in paragraph] for paragraph in tags]
+      
+    rows = [prettify.content_comment_row('Original text','Comments')]
+    for i,(p,p_type,p_tag) in enumerate(zip(paragraphs, p_types, ntags)):
+        style = colors[p_type][i%2]
+        flat_tags = itertools.chain(*p_tag)
+        flat_tags = '<br>'.join([word for word,tag in flat_tags])
+        rows.append(prettify.content_comment_row(i, p, flat_tags, style=style))
+        
+    table = prettify.table('\n'.join(rows))
+    html = prettify.html(table)
+    f_out = open('www/physics.html','w')
+    f_out.write(html)
+    f_out.close()

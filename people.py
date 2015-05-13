@@ -40,6 +40,18 @@ def get_gender(name):
     else:
         return 'neutral'
     
+
+def all_noun_hypernyms(word):
+    '''
+    Return all noun hypernyms of word using wordnet
+    '''
+    synsets = wn.synsets(word)
+    hyper = set()
+    for synset in synsets:
+        if synset.pos() == 'n':
+            hyper = hyper | set([i for i in synset.closure(lambda s:s.hypernyms()+s.instance_hypernyms())])
+    return hyper
+    
     
 def is_person_wordnet(word):
     '''
@@ -56,10 +68,7 @@ def is_person_wordnet(word):
     if all(synset.pos()!='n' for synset in synsets): # Rule 2
         return False
     # At this point there is at least one noun
-    hyper = set()
-    for synset in synsets:
-        if synset.pos() == 'n':
-            hyper = hyper | set([i for i in synset.closure(lambda s:s.hypernyms()+s.instance_hypernyms())])
+    hyper = all_noun_hypernyms(word)
     if object_synset in hyper: # Rule 3
         return False
     if person_synset in hyper: # Rule 4
