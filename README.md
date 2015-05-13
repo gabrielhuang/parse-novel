@@ -2,14 +2,20 @@
 Read novels without effort!
 
 Project Structure
-=================
+-----------------
 
 `data/`: contains books and datasets
 `legacy/`: contains legacy code for named entity and character description
 `www/`: folder to contain the Augmented Novel
 
-Howtos
-======
+
+Dependencies
+-----------------
+- Python 2.7
+- NLTK
+- numpy and scipy
+- scikit-learn (only for weight.py)
+
 
 Generate the Augmented Novel and the interactions graph
 -------------------------------------------------------
