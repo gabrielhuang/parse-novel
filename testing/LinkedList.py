@@ -35,18 +35,12 @@ class LinkedList():
                 pass
             node.prevNode = None
             self.append(node)
-    def __str__(self):
+    def printout(self):
         curnode = self.head
-        acc = ''
         while (curnode):
-            acc += str(curnode.data)
+            print curnode.data
             if curnode == curnode.nextNode:
                 break;
             curnode = curnode.nextNode
-        acc += "---"
-        return acc
-    def __iter__(self):
-        current = self.head
-        while current is not None: #iterating over all named entities
-            yield current.data
-            current = current.nextNode
+        print "---"
+        

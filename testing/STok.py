@@ -19,24 +19,34 @@ def isuc(char): #uppercase
 def issn(char): #space or newline or tab
     return (ord(char) == 32 or (ord(char) > 9 and ord(char) < 15))
 
+def fix(text):
+    ntext = ""
+    for char in text:
+        if not isc(char) and not issn(char) and (char not in eos) and char != ".":
+            ntext += "!"
+        else:
+            ntext += char
+    return ntext
+
 #tokenizes sentences - does not include the period at the end of the sentence
 def stok(text):
+    text = fix(text)
     text = text.replace('"', "") #removes quotation marks - not necessary for our purposes
     text = text.replace(" '", "") #removes quotation marks - not necessary for our purposes
     text = text.replace("' ", "") #removes quotation marks - not necessary for our purposes
-    test = text.replace("--", " -- ")
+    text = text.replace("--", " -- ")
     stok = [] #array of sentences
     sent = "" #current sentence
     
     for i in range(len(text)):
         #pesky -- usage in text...
         try:
-            if text[i:i+2] in eos:
+            if text[i:i+2] in eos and i < len(text)-1:
                 if len(sent) > 0:
                     sent += " " + text[i:i+2] + " "
                     stok.append(sent)
                     sent = ""
-                continue#i += 1
+                i += 1
         except:
             pass
         #
@@ -76,6 +86,11 @@ def stok(text):
                                 end = False
                         except:
                             pass
+            try:
+                if text[i+1] in eos or text[i+1] == ".":
+                    end = True
+            except:
+                pass
             if end:
                 sent += " " + text[i] + " " #includes a space before
                 stok.append(sent)

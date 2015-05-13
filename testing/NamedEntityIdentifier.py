@@ -151,11 +151,11 @@ if __name__=='__main__':
     nei = NamedEntityIdentifier()    
     
     print 'Training'
-    text = open('data/text.txt').read()    
+    text = open('../data/text.txt').read()    
     nei.train(text, mincount=7)
     print '\n'.join(map(str,nei.get()))
     
     print 'Predicting'    
-    par = open('data/par.txt').read()
+    par = open('../data/par.txt').read()
     detected = nei.predict(par)
     print detected

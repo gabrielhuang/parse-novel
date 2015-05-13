@@ -3,10 +3,10 @@ Created on May 5, 2015
 
 @author: billyanhuang
 '''
-titles = set(["Mr.", "Mrs.", "Ms.", "Miss", "Mister", "Dr.", "Doctor", "Monsieur", "Madame"]) #titles
+titles = set(["Mr.", "Mrs.", "Ms.", "Miss", "Mister", "Dr.", "Doctor", "Monsieur", "Madame", "Monseigneur", "Sir", "Lady", "M.", "Mme.", "Mademoiselle"]) #titles
 ctitles = []
-ctitles.append(set(["Mr.", "Mister", "Monsieur", "Marquis"]))
-ctitles.append(set(["Mrs.", "Ms.", "Miss", "Madame"]))
+ctitles.append(set(["Mr.", "Mister", "Monsieur", "Marquis", "Monseigneur", "Sir", "M."]))
+ctitles.append(set(["Mrs.", "Ms.", "Miss", "Madame", "Lady", "Mme.", "Mademoiselle"]))
 ctitles.append(set(["Dr.", "Doctor"]))
 suffixes = set(["Jr.", "Sr."]) #suffixes
 
@@ -50,21 +50,21 @@ class Name:
             self.l = ent[t+1]
             self.fl = ""
         elif l == 1:
-            if t == 1:   
-                self.f = ""
-                self.m = ""
-                self.l = ent[t]
-                self.fl = ""
-            else:
-                self.f = ""
-                self.m = ""
-                self.l = ""
-                self.fl = ent[t]
+            self.f = ""
+            self.m = ""
+            self.l = ""
+            self.fl = ent[t]
         else:
-            self = None
-        if (self == None) or ((self.f in titles) or (self.m in titles) or (self.l in titles) or (self.fl in titles) or 
+            self.f = ""
+            self.m = ""
+            self.l = ""
+            self.fl = ""
+        if ((self.f in titles) or (self.m in titles) or (self.l in titles) or (self.fl in titles) or 
             (self.f in suffixes) or (self.m in suffixes) or (self.l in suffixes) or (self.fl in suffixes)):
-            self = None
+            self.f = ""
+            self.m = ""
+            self.l = ""
+            self.fl = ""
     
     def update(self, other):
         if len(other.t) > len(self.t):
@@ -121,9 +121,6 @@ class Name:
         return (poss and match)
     
     def printout(self):
-        return (self.get_data(), self.get_count())
-    
-    def get_data(self):
         info = ""
         if len(self.t) > 0:
             info += self.t + " "
@@ -137,13 +134,7 @@ class Name:
             info += self.fl + " "
         if len(self.s) > 0:
             info += self.s + " "
-        return info[:-1]
-        
-    def get_count(self):
-        return self.count
-    
-    def __str__(self):
-        return str(self.printout()[0])
+        return tuple([info[:-1], self.count])
 
 def samename(n1, n2): #first/last names
     try:
