@@ -4,3 +4,12 @@
 /www/*.html
 /www/graph.txt
 /www/*.gv
+/tex/*.log
+/tex/*.out
+/tex/*.pdf
+/tex/*.gz
+/tex/*.aux
+/tex/*.bbl
+/tex/*.bib
+/tex/*.blg
+/tex/*.dvi
