@@ -91,7 +91,7 @@ class Weighter:
 
 #%% Test
 if __name__=='__main__': 
-    txt = open('data/gatsby.txt').read()
+    txt = open('data/gatsby.txt').read().decode('utf8').strip()
     num_segments = 5
     size_segments = len(txt)/num_segments
     segments = [txt[i*size_segments:(i+1)*size_segments] for i in range(num_segments)]
@@ -114,5 +114,5 @@ if __name__=='__main__':
     values = 10. * np.array(values)
     html = prettify.prettify_in_place(txt, spans, values)
     f_out = open('www/scores.html','w')
-    f_out.write(html)
+    f_out.write(html.encode('utf8'))
     f_out.close()   

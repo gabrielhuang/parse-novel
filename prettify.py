@@ -10,7 +10,7 @@ import itertools
 #####################################
 # String manipulation
 #####################################
-html_body = '''
+html_body = u'''
 <html>
 <meta charset="utf-8"/>
 <head>
@@ -32,21 +32,21 @@ td{{
 def value_to_yellow(x):
     n = int(255*(1.-x))
     if n<0xf:
-        hx = '0'+hex(n)[2:]
+        hx = u'0'+hex(n)[2:]
     else:
         hx = hex(n)[2:]
-    return '#ffff'+hx
+    return u'#ffff'+hx
 
 def value_to_size(x, min_sz=0.75, max_sz=2.):
     size = min_sz+x*(max_sz-min_sz)
-    return str(int(100*size))+'%'
+    return str(int(100*size))+u'%'
 
 def decorate_color(text, value):
-    return '<mark style="background-color: {color}">{text}</mark>\n'.format(
+    return u'<mark style="background-color: {color}">{text}</mark>\n'.format(
                 text=text, color=value_to_yellow(value))
 
 def decorate_color_and_size(text, value):
-    return '<mark style="font-size: {sz}; background-color: {color}">{text}</mark>\n'.format(
+    return u'<mark style="font-size: {sz}; background-color: {color}">{text}</mark>\n'.format(
             text=text, color=value_to_yellow(value), sz=value_to_size(value))
  
 def translate_newlines(txt):
@@ -54,7 +54,7 @@ def translate_newlines(txt):
     Transform newlines into <br>newlines
     '''
     lines = txt.split('\n')
-    return '<br>\n'.join(lines)    
+    return u'<br>\n'.join(lines)    
     
 #####################################
 # Reshape utils
@@ -98,8 +98,8 @@ def prettify_sentences(chunks, values):
     for chunk_sent,val_sent in zip(chunks, values):
         for chunk,value in zip(chunk_sent,val_sent):
             doc.append(decorate_color(chunk, value))
-        doc.append('<br>')
-    t = ' '.join(doc)
+        doc.append(u'<br>')
+    t = u' '.join(doc)
     return html_body.format(content=t)    
 
 
@@ -116,7 +116,7 @@ def prettify_in_place(text, spans, values):
             out.append(translate_newlines(text[last_end:begin]))
         out.append(decorate_color(translate_newlines(text[begin:end]), val))
         last_end = end
-    out = ''.join(out)
+    out = u''.join(out)
     return html_body.format(content=out)
     
     
@@ -129,11 +129,11 @@ def content_comment_row(*args, **kwargs):
     **kwargs: style=(replace with css string)
     '''
     style = kwargs.get('style', '')    
-    acc = ['<tr>']    
+    acc = [u'<tr>']    
     for arg in args:
-        acc.append('<td class="content" style="{}">{}</td>'.format(style, arg))
-    acc.append('</tr>')
-    return ' '.join(acc)
+        acc.append(u'<td class="content" style="{}">{}</td>'.format(style, arg))
+    acc.append(u'</tr>')
+    return u' '.join(acc)
 
     
 def merged_row(text, cols, style=''):
@@ -144,17 +144,17 @@ def merged_row(text, cols, style=''):
     cols: number of columns
     style: css style string
     '''  
-    acc = ['<tr>']    
-    acc.append('<td colspan="{}" class="content" style="{}">{}</td>'.format(cols, style, text))
-    acc.append('</tr>')
-    return ' '.join(acc)
+    acc = [u'<tr>']    
+    acc.append(u'<td colspan="{}" class="content" style="{}">{}</td>'.format(cols, style, text))
+    acc.append(u'</tr>')
+    return u' '.join(acc)
     
     
 def table(rows):
     '''
     Return a table with html content
     '''    
-    return '<table>\n{}\n</table>'.format(rows)
+    return u'<table>\n{}\n</table>'.format(rows)
     
     
 def html(body_content):

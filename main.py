@@ -24,7 +24,7 @@ use_postag = False
 txt_file = open('data/gatsby.txt','r')
 txt_file = open('data/hp.txt','r')
 txt_file = open('data/sherlock-pg1661.txt','r')
-txt = txt_file.read().strip()
+txt = txt_file.read().decode('utf8').strip()
 #txt = txt_file.read(100000).strip()[3000:]
 
 
@@ -59,7 +59,7 @@ for i,(p,p_type) in enumerate(zip(paragraphs, p_types)):
 table = prettify.table('\n'.join(rows))
 html = prettify.html(table)
 f_out = open('www/paragraphs.html','w')
-f_out.write(html)
+f_out.write(html.encode('utf8'))
 f_out.close()    
           
         
@@ -76,7 +76,7 @@ for i,(p,p_type) in enumerate(zip(paragraphs, p_types)):
 table = prettify.table('\n'.join(rows))
 html = prettify.html(table)
 f_out = open('www/dialogs.html','w')
-f_out.write(html)
+f_out.write(html.encode('utf8'))
 f_out.close()    
    
 #%% 3a. Export numbered paragraphs with dialog AND named entity detection
@@ -112,7 +112,7 @@ for i,(p,p_type) in enumerate(zip(paragraphs, p_types)):
 table = prettify.table('\n'.join(rows))
 html = prettify.html(table)
 f_out = open('www/peopleA.html','w')
-f_out.write(html)
+f_out.write(html.encode('utf8'))
 f_out.close()               
         
 # generate graph    
@@ -159,11 +159,11 @@ if export_entities:
     for i,(p,p_type,p_tag) in enumerate(zip(paragraphs, p_types, ntags)):
         style = colors[p_type][i%2]
         flat_tags = itertools.chain(*p_tag)
-        flat_tags = '<br>'.join([word for word,tag in flat_tags])
+        flat_tags = u'<br>'.join([word for word,tag in flat_tags])
         rows.append(prettify.content_comment_row(i, p, flat_tags, style=style))
         
-    table = prettify.table('\n'.join(rows))
+    table = prettify.table(u'\n'.join(rows))
     html = prettify.html(table)
     f_out = open('www/physics.html','w')
-    f_out.write(html)
+    f_out.write(html.encode('utf8'))
     f_out.close()
